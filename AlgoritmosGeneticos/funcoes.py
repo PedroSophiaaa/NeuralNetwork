@@ -1,6 +1,6 @@
 import random as rd
 
-def fitness_cb(ind):
+def fitness(ind):
     """Utilizada para comparar individuos.
     
     Args:
@@ -12,11 +12,22 @@ def fitness_cb(ind):
 
 
 def random_gen_cb():
-    """Gera um gene aleatório válido para o problema.
+    """Gera um gene aleatório válido para o problema das caixas binárias.
     
     Return:
         0 ou 1."""
     return rd.randint(0,1)
+
+
+def random_gen_cnb(max):
+    """Gera um gene aleatório válido para o problema das caixas não binárias.
+    
+    Args:
+        max: valor máximo para o gene
+
+    Return:
+        0 ou 1."""
+    return rd.randint(0,max)
 
 
 def new_ind_cb(n):
@@ -28,8 +39,23 @@ def new_ind_cb(n):
     Return:
         Uma lista com n genes, representando um indivíduo"""
     ind = []
-    for i in range(n):
+    for _ in range(n):
         ind.append(random_gen_cb())
+    return ind
+
+
+def new_ind_cnb(n, max):
+    """Gera um indivíduo válido.
+    
+    Args:
+        n: número de genes
+        max: valor máximo para o gene
+    
+    Return:
+        Uma lista com n genes, representando um indivíduo"""
+    ind = []
+    for _ in range(n):
+        ind.append(random_gen_cnb(max))
     return ind
 
 
@@ -49,7 +75,28 @@ def new_pop_cb(tampop, tamcromo):
         dicio_obj[i+1] = { #Armazena o valor da função objetivo correspondente a cada indivíduo
             'tag': i+1,
             'ind': curr_ind,
-            'sum': fitness_cb(curr_ind)}
+            'sum': fitness(curr_ind)}
+    return dicio_obj
+
+
+def new_pop_cnb(tampop, tamcromo, max):
+    """Gera uma nova população aleatória.
+
+    Args:
+        tampop: tamanho da população
+        tamcromo: tamanho do cromossomo
+        max: valor máximo para o gene
+
+    Return:
+        Um dicionário com tag, indivíduo e soma.
+    """
+    dicio_obj = {} #Define o dicionário contendo os indivíduos
+    for i in range(tampop):
+        curr_ind = new_ind_cnb(tamcromo, max)
+        dicio_obj[i+1] = { #Armazena o valor da função objetivo correspondente a cada indivíduo
+            'tag': i+1,
+            'ind': curr_ind,
+            'sum': fitness(curr_ind)}
     return dicio_obj
 
 
@@ -58,7 +105,10 @@ def mutation_cb(ind, pm):
     
     Args:
         ind: indivíduo a ser mutado
-        pm: probabilidade de mutação"""
+        pm: probabilidade de mutação
+        
+    Returns:
+        indivíduo mutado"""
     for i in range(len(ind['ind'])):
         mut = rd.random()
         if mut < pm:
@@ -67,7 +117,25 @@ def mutation_cb(ind, pm):
     return ind
 
 
-def crossover_cb(p1, p2, pc):
+def mutation_cnb(ind, pm, max):
+    """Realiza a mutação em toda a bitstring de um indivíduo, respeitando o fator pm
+    
+    Args:
+        ind: indivíduo a ser mutado
+        pm: probabilidade de mutação
+        max: número maximo do gene
+        
+    Returns:
+        indivíduo mutado"""
+    for i in range(len(ind['ind'])):
+        mut = rd.random()
+        if mut < pm:
+            ind['ind'][i] = random_gen_cnb(max)
+            print('Mutation in gen', i+1, 'in', ind['tag'], 'with mut=', mut)
+    return ind
+
+
+def crossover(p1, p2, pc):
     """Realiza o cruzamento entre 2 pais, respeitando o fator pc
     
     Args:
@@ -93,7 +161,7 @@ def crossover_cb(p1, p2, pc):
     return [c1,c2]
 
 
-def roull_sel_max_cb(pop):
+def roull_sel_max(pop):
     """Seleciona os individuos de uma população pelo método da roleta para problemas de maximização.
     
     Args:
@@ -117,7 +185,6 @@ def roull_sel_max_cb(pop):
     for i in range(len(populacao_selecionada)):
         pop_dic[i+1] = {
             'tag': i+1,
-            'ind': populacao_selecionada[i],
-            'sum': fitness_cb(populacao_selecionada[i])}
+            'ind': populacao_selecionada[i]}
     print('sel inds:', populacao_selecionada)
     return pop_dic
