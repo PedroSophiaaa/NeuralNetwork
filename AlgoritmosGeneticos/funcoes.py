@@ -1,5 +1,8 @@
 import random as rd
 
+
+######### Fitness
+
 def fitness(ind):
     """Utilizada para comparar individuos.
     
@@ -10,6 +13,24 @@ def fitness(ind):
         A soma dos valores de cada caixa"""
     return sum(ind)
 
+def fitness_passw(ind, real_passw):
+    """Computa o score de um indivíduo em comparação com a senha real.
+
+    Args:
+        ind: lista contendo as letras da senha
+        real_passw: a senha real
+    
+    Returns:
+        O score entre as duas senhas (input e real), medida letra por letra.
+    """
+    diff = 0
+
+    for l_input, l_real in zip(ind, real_passw):
+        diff += abs(ord(l_input) - ord(l_real))
+
+    return diff
+
+######### Gen
 
 def random_gen_cb():
     """Gera um gene aleatório válido para o problema das caixas binárias.
@@ -29,6 +50,7 @@ def random_gen_cnb(max):
         0 ou 1."""
     return rd.randint(0,max)
 
+######### Ind
 
 def new_ind_cb(n):
     """Gera um indivíduo válido.
@@ -58,6 +80,7 @@ def new_ind_cnb(n, max):
         ind.append(random_gen_cnb(max))
     return ind
 
+######### Pop
 
 def new_pop_cb(tampop, tamcromo):
     """Gera uma nova população aleatória.
@@ -99,6 +122,7 @@ def new_pop_cnb(tampop, tamcromo, max):
             'sum': fitness(curr_ind)}
     return dicio_obj
 
+######### Mutation
 
 def mutation_cb(ind, pm):
     """Realiza a mutação em toda a bitstring de um indivíduo, respeitando o fator pm
@@ -134,6 +158,7 @@ def mutation_cnb(ind, pm, max):
             print('Mutation in gen', i+1, 'in', ind['tag'], 'with mut=', mut)
     return ind
 
+######### Crossover
 
 def crossover(p1, p2, pc):
     """Realiza o cruzamento entre 2 pais, respeitando o fator pc
@@ -160,6 +185,7 @@ def crossover(p1, p2, pc):
         print('Crossover failed.')
     return [c1,c2]
 
+######### Selection
 
 def roull_sel_max(pop):
     """Seleciona os individuos de uma população pelo método da roleta para problemas de maximização.
