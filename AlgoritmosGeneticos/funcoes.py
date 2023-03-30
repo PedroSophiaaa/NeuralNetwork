@@ -48,6 +48,7 @@ def random_gen_cnb(max):
         0 ou 1."""
     return rd.randint(0,max)
 
+######### Ind
 
 def random_gen_passw(char_list):
     char = rd.choice(char_list)
@@ -83,6 +84,7 @@ def new_ind_cnb(n, max):
         ind.append(random_gen_cnb(max))
     return ind
 
+######### Pop
 
 def new_ind_passw(tampassw, char_list):
     """Gera um indivíduo válido.
@@ -138,6 +140,7 @@ def new_pop_cnb(tampop, tamcromo, max):
             'sum': fitness(curr_ind)}
     return dicio_obj
 
+######### Mutation
 
 def new_pop_passw(tampop, tampassw, char_list, real_passw):
     """Gera uma nova população aleatória.
@@ -242,6 +245,7 @@ def crossover(p1, p2, pc):
         print('Crossover failed.')
     return [c1,c2]
 
+######### Selection
 
 def crossover_passw(p1, p2, pc):
     """Realiza o cruzamento entre 2 pais, respeitando o fator pc
