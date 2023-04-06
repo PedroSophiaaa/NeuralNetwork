@@ -26,8 +26,33 @@ def fitness_passw(ind, real_passw):
 
     for l_input, l_real in zip(ind, real_passw):
         diff += abs(ord(l_input) - ord(l_real))
-
     return diff
+
+
+def fitness_passw_size(ind, real_passw):
+    """Computa o score de um indivíduo em comparação com a senha real.
+    Args:
+        ind: lista contendo as letras da senha
+        real_passw: a senha real
+    
+    Returns:
+        O score entre as duas senhas (input e real), medida letra por letra.
+    """
+    diff = 0
+    real_size = len(real_passw)
+    ind_size = len(ind)
+
+    diff_size = abs(real_size - ind_size)
+
+    for l_input, l_real in zip(ind, real_passw):
+        diff += abs(ord(l_input) - ord(l_real))
+
+    if diff == 0 and diff_size != 0:
+        print('The password is in the string.')
+        return 5*diff_size
+
+    return (diff + 10*diff_size)
+
 
 ######### Gen
 
@@ -48,7 +73,6 @@ def random_gen_cnb(max):
         0 ou 1."""
     return rd.randint(0,max)
 
-######### Ind
 
 def random_gen_passw(char_list):
     char = rd.choice(char_list)
@@ -84,7 +108,6 @@ def new_ind_cnb(n, max):
         ind.append(random_gen_cnb(max))
     return ind
 
-######### Pop
 
 def new_ind_passw(tampassw, char_list):
     """Gera um indivíduo válido.
@@ -94,6 +117,25 @@ def new_ind_passw(tampassw, char_list):
     Return:
       Lista com n letras
     """
+
+    candidato = []
+
+    for n in range(tampassw):
+        candidato.append(random_gen_passw(char_list))
+
+    return candidato
+
+def new_ind_passw_size(char_list, mini, maxi):
+    """Gera um indivíduo válido.
+    Args:
+      char_list: list de caracteres válidos.
+      mini: Tamanho mínimo da senha
+      maxi: Tamanho máximo da senha
+    Return:
+      Lista com n letras
+    """
+
+    tampassw = rd.randint(mini, maxi)
 
     candidato = []
 
@@ -140,7 +182,6 @@ def new_pop_cnb(tampop, tamcromo, max):
             'sum': fitness(curr_ind)}
     return dicio_obj
 
-######### Mutation
 
 def new_pop_passw(tampop, tampassw, char_list, real_passw):
     """Gera uma nova população aleatória.
@@ -160,6 +201,28 @@ def new_pop_passw(tampop, tampassw, char_list, real_passw):
             'ind': ''.join(curr_ind),
             'fitness': fitness_passw(curr_ind, real_passw)}
     return dicio_pop
+
+
+def new_pop_passw_size(tampop, char_list, real_passw, mini, maxi):
+    """Gera uma nova população aleatória.
+    Args
+      tampop: tamanho da população.
+      char_list: lista de caracteres válidos.
+      real_passw: senha verdadeira
+      mini: menor tamanho da senha
+      maxi: maior tamanho da senha
+    Returns:
+      Um dicionário com tag, senha e fitness.
+    """
+    dicio_pop = {}
+    for i in range(tampop):
+        curr_ind = new_ind_passw_size(char_list, mini, maxi)
+        dicio_pop[i+1] = { #Armazena o valor da função objetivo correspondente a cada indivíduo
+            'tag': i+1,
+            'ind': ''.join(curr_ind),
+            'fitness': fitness_passw_size(curr_ind, real_passw)}
+    return dicio_pop
+
 
 ######### Mutation
 
@@ -217,6 +280,45 @@ def mutation_passw(ind, char_list, pm):
             print('Mutation in gen ', i+1, ' in [', ind['tag'], ' : ', ind['ind'], '] with mut= ', mut, f'. {char_b} to {char_a}', sep='')
     return ind
 
+
+def mutation_size(ind, pm, char_list):
+    """Realiza a mutação de um gene no problema da senha.
+    Args:
+      ind: individuo a ser mutado
+      pm: probabilidade de mutação
+      char_list: possíveis caracteres
+    Return:
+      indivíduo mutado.
+    """
+    mut = rd.random()
+    pre_mut_ind = ind["ind"]
+    ind_size = len(ind["ind"])
+    if mut < pm:
+        crosspoint_1 = rd.randint(0, 100)
+        crosspoint_2 = rd.randint(0, 100)
+
+        while abs(crosspoint_1 - crosspoint_2) < 3:
+            crosspoint_2 = rd.randint(0, 100)
+        
+        if crosspoint_1 > ind_size:
+            diff_size = crosspoint_1 - ind_size
+            gens = [random_gen_passw(char_list) for _ in range(diff_size)]
+            ind["ind"] = ind["ind"] + ''.join(gens)
+        elif crosspoint_2 > ind_size:
+            diff_size = crosspoint_2 - ind_size
+            gens = [random_gen_passw(char_list) for _ in range(diff_size)]
+            ind["ind"] = ind["ind"] + ''.join(gens)
+        else:
+            if crosspoint_1 > crosspoint_2:
+                ind["ind"] = ind["ind"][crosspoint_2:crosspoint_1]
+            elif crosspoint_2 > crosspoint_1:
+                ind["ind"] = ind["ind"][crosspoint_1:crosspoint_2]
+            else:
+                return ind
+        print('Size mutation in [', ind['tag'], ' : ', pre_mut_ind, '] with mut= ', mut, f'. {ind_size} to {len(ind["ind"])}', sep='')
+    return ind
+    
+
 ######### Crossover
 
 def crossover(p1, p2, pc):
@@ -245,7 +347,6 @@ def crossover(p1, p2, pc):
         print('Crossover failed.')
     return [c1,c2]
 
-######### Selection
 
 def crossover_passw(p1, p2, pc):
     """Realiza o cruzamento entre 2 pais, respeitando o fator pc
@@ -274,6 +375,41 @@ def crossover_passw(p1, p2, pc):
         c2 = p2
         print('Crossover failed.')
     return [''.join(c1),''.join(c2)]
+
+
+def crossover_passw_size(p1, p2, pc):
+    """Realiza o cruzamento entre 2 pais, respeitando o fator pc
+    
+    Args:
+        p1: pai1
+        p2: pai2
+        pc: probabilidade de cruzamento
+        
+    Return:
+        Lista contendo os 2 indivíduos filhos"""
+
+    p1 = list(p1)
+    p2 = list(p2)
+    c1, c2 = p1.copy(), p2.copy()
+    cross = rd.random()
+    if cross < pc:
+        if len(p1) > len(p2):
+            cross_point = rd.randint(1, len(p2)-1)
+        elif len(p2) > len(p1):
+            cross_point = rd.randint(1, len(p1)-1)
+        if len(p1) == len(p2):
+            cross_point = rd.randint(1, len(p1)-1)
+        c1[:cross_point] = p1[:cross_point]
+        c1[cross_point:] = p2[cross_point:]
+        c2[:cross_point] = p2[:cross_point]
+        c2[cross_point:] = p1[cross_point:]
+        print('crossover between', ''.join(p1), 'and', ''.join(p2), 'done.')
+    else:
+        c1 = p1
+        c2 = p2
+        print('Crossover failed.')
+    return [''.join(c1),''.join(c2)]
+
 
 ######### Selection
 
