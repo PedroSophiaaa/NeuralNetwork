@@ -1,5 +1,44 @@
 import random as rd
 
+######### Auxiliar
+
+def euclidian_distance(a, b):
+    """Calcula a distância Euclidiana de dois pontos
+
+    Args:
+      a: x1, y1
+      b: x2, y2
+
+    Returns:
+      Distância entre os pontos `a` e `b`
+    """
+
+    x1 = a[0]
+    x2 = b[0]
+    y1 = a[1]
+    y2 = b[1]
+
+    dist = ((x1-x2)**2 + (y1-y2) ** 2)**(1/2)
+
+    return dist
+
+def new_cities(n):
+    """cria cidades com coordenadas (x,y).
+
+    Args:
+      n: número de cidades
+
+    Return:
+      Dicionário com as cidade e as coordenadas
+    """
+
+    cities = {}
+
+    for i in range(n):
+        cities[f"City {i+1}"] = (rd.random(), rd.random())
+
+    return cities
+
 
 ######### Fitness
 
@@ -52,6 +91,34 @@ def fitness_passw_size(ind, real_passw):
         return 5*diff_size
 
     return (diff + 10*diff_size)
+
+def fitness_cv(ind, cities):
+    """Computa o score de um individuo no problema do caixeiro viajante.
+
+    Args:
+      ind: Lista com a ordem das cidades
+      cities: Dicionário com as cidades e suas coordenadas
+
+    Return: A distancia percorrida.
+    """
+
+    dist = 0
+
+    for i in range(len(ind) - 1):
+        
+        start = cities[ind[i]]
+        end = cities[ind[i + 1]]
+        
+        route = euclidian_distance(start, end)
+        dist = dist + route
+               
+    start = cities[ind[-1]]
+    end = cities[ind[0]]
+
+    route = euclidian_distance(start, end)
+    dist = dist + route
+    
+    return dist
 
 
 ######### Gen
@@ -144,6 +211,20 @@ def new_ind_passw_size(char_list, mini, maxi):
 
     return candidato
 
+
+def new_ind_cv(cities):
+    """Gera um possível caminho no problema do caixeiro viajante
+
+    Args:
+      cities: dicionário com as cidades e coordenadas
+
+    Return: lista de cidades com caminho aleatório
+    """
+    cities_list = list(cities.keys())
+    rd.shuffle(cities_list)
+    return cities_list
+
+
 ######### Pop
 
 def new_pop_cb(tampop, tamcromo):
@@ -222,6 +303,27 @@ def new_pop_passw_size(tampop, char_list, real_passw, mini, maxi):
             'ind': ''.join(curr_ind),
             'fitness': fitness_passw_size(curr_ind, real_passw)}
     return dicio_pop
+
+
+def new_pop_cv(tampop, cities):
+    """Gera uma nova população aleatória.
+    Args
+      tampop: tamanho da população.
+      cities: dicionário com as cidades e as coordenadas.
+    Returns:
+      Um dicionário com tag, senha e fitness.
+    """
+
+    dicio_pop = {}
+
+    for i in range(tampop):
+        curr_ind = new_ind_cv(cities)
+        dicio_pop[i+1] = { #Armazena o valor da função objetivo correspondente a cada indivíduo
+            'tag': i+1,
+            'ind': curr_ind,
+            'fitness': fitness_cv(curr_ind, cities)}
+    return dicio_pop
+    #eduardaveigac
 
 
 ######### Mutation
@@ -319,6 +421,25 @@ def mutation_size(ind, pm, char_list):
     return ind
     
 
+def swap_mutation(ind):
+    """Inverte o valor de dois genes.
+
+    Args:
+      individuo: indivíduo a ser mutado
+
+    Return:
+      indivíduo mutado
+    """
+
+    index = list(range(len(ind['ind'])))
+    index_sample = rd.sample(index, k=2)
+    index1 = index_sample[0]
+    index2 = index_sample[1]
+
+    ind["ind"][index1], ind["ind"][index2] = ind["ind"][index2], ind["ind"][index1]
+
+    return ind
+
 ######### Crossover
 
 def crossover(p1, p2, pc):
@@ -411,6 +532,32 @@ def crossover_passw_size(p1, p2, pc):
     return [''.join(c1),''.join(c2)]
 
 
+def crossover_cv(p1, p2, pc):
+    """Aplica o método de cruzamento ordenano entre p1 e p2
+
+    Args:
+      p1: pai1
+      p2: pai2
+      pc: probabilidade de cruzamento
+
+    Return: Duas listas, filho1 e filho2
+    """
+    co1 = rd.randint(0, len(p1) - 2)
+    co2 = rd.randint(co1 + 1, len(p1) - 1)
+    
+    c1 = p1[co1:co2]
+    for gen in p2:
+        if gen not in c1:
+            c1.append(gen)
+            
+    c2 = p2[co1:co2]
+    for gen in p1:
+        if gen not in c2:
+            c2.append(gen)
+            
+    return [c1, c2]
+
+
 ######### Selection
 
 def roull_sel_max(pop):
@@ -478,6 +625,47 @@ def tourn_sel_min(pop, real_passw, tamtourn=3):
                 'tag': i+1,
                 'ind': ''.join(sel_pop[i]),
                 'fitness': fitness_passw(sel_ind, real_passw)}
+
+    print('sel inds:', sel_pop)
+    return pop_dic
+
+
+def tourn_sel_min_cv(pop, cities, tamtourn=3):
+    """Seleciona os indivíduos de uma população pelo método de torneio para problemas de minimização.
+
+    Args:
+        pop: dicionário com todos os indivíduos da população e seus valores da função objetivo
+        cities: dicionário com as cidades
+        tamtourn: quantidade de invidiuos no torneio
+    Returns:
+        Dicionário com a população dos indivíduos selecionados, a tag e seu valor de objetivo.
+    """
+    pop_tags = [pop[i]['tag'] for i in pop]
+
+    sel_pop = []
+
+    for _ in pop:
+        fighters = rd.sample(pop_tags, tamtourn)
+
+        min_fitness = float('inf')
+
+        for ind_tag in fighters:
+            ind = pop[ind_tag]['ind']
+            fit = pop[ind_tag]['fitness']
+
+            if fit < min_fitness:
+                sel_ind = ind
+                min_fitness = fit
+
+        sel_pop.append(sel_ind)
+        
+
+    pop_dic = {}
+    for i in range(len(sel_pop)):
+        pop_dic[i+1] = {
+                'tag': i+1,
+                'ind': (sel_pop[i]),
+                'fitness': fitness_cv(sel_ind, cities)}
 
     print('sel inds:', sel_pop)
     return pop_dic

@@ -1,5 +1,7 @@
 # Experimentos de otimização e algoritmos genéticos
 
-Coloque seus experimentos de algoritmos genéticos nesta pasta.
+Essa pasta contém os experimentos de algorítmos genéticos.
 
-Esceva um README aqui para guiar o leitor sobre seus experimentos realizados.
+Cada arquivo apresenta uma conclusão sobre o experimento apresentado.
+
+Em `funcoes.py` temos as funções utilizadas nos experimentos.
