@@ -1,3 +1,5 @@
+![logo](https://github.com/PedroSophiaa/NeuralNetwork/logo.png)
+
 # 🧬 Repositório de RNAG - Redes Neurais e Algoritmos Genéticos
 ### 👨‍🎓 Pedro Sophia - 220045
 ##### 📅 2023
