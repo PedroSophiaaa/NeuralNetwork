@@ -2,6 +2,33 @@ import random as rd
 
 ######### Auxiliar
 
+def backpack_values(ind, objects, obj_order):
+    """Encontra os valores relevantes para uma mochila
+
+    Args:
+      ind: Indivíduo válido (lista binária)
+      objects: Dicionário com os objetos e seus valores
+      obj_order: Lista com a ordem dos objetos
+
+    Returns:
+      total_p: preço total
+      total_w: peso total
+    """
+
+    total_p = 0
+    total_w = 0
+    
+    for pegou_o_item_ou_nao, nome_do_item in zip(ind, obj_order):
+        if pegou_o_item_ou_nao == 1:
+            item_p = objects[nome_do_item]["valor"]
+            item_w = objects[nome_do_item]["peso"]
+            
+            total_p = total_p + item_p
+            total_w = total_w + item_w
+
+    return total_p, total_w
+
+
 def euclidian_distance(a, b):
     """Calcula a distância Euclidiana de dois pontos
 
@@ -119,6 +146,47 @@ def fitness_cv(ind, cities):
     dist = dist + route
     
     return dist
+
+def fitness_mochila(ind, objects, lim, obj_order):
+    """Computa o score de um individuo no problema da mochila
+
+    Args:
+      ind: Indivíduo válido (uma lista binária)
+      objects: Dicionário com os objetos e seus valores
+      lim: Int: Limite de peso da mochila
+      obj_order: Lista com a ordem dos objetos
+
+    Returns: Valor dos itens da mochila ou penalidade para indivíduos inválidos.
+    """
+    
+    valor_mochila, peso_mochila = backpack_values(ind, objects, obj_order)
+    
+    if peso_mochila > lim:
+        return 0.001
+    else:
+        return valor_mochila
+
+def fitness_pop_mochila(pop, objects, lim, obj_order):
+    """Computa o score de uma população no problema da mochila
+
+    Args:
+      pop: lista com os indivíduos da população
+      objects: Dicionário com objetos
+      lim: Int: Limite de peso da mochila
+      obj_order: Lista com a ordem dos objetos
+
+    Returns: Lista com os valores dos itens de cada indivíduo
+    """
+
+    res = []
+    for ind in pop:
+        res.append(
+            fitness_mochila(
+                ind, objects, lim, obj_order
+            )
+        )
+
+    return res
 
 
 ######### Gen
@@ -325,6 +393,20 @@ def new_pop_cv(tampop, cities):
     return dicio_pop
     #eduardaveigac
 
+def new_pop_mochila(tam_pop, n):
+    """Cria uma nova população aleatório para o problema da mochila.
+
+    Args:
+      tam_pop: tamanho da população
+      n: número de genes
+
+    Returns: Uma lista com indivíduos de n genes
+    """
+    pop = []
+    for _ in range(tam_pop):
+        pop.append(new_ind_cb(n))
+    return pop
+
 
 ######### Mutation
 
@@ -342,6 +424,22 @@ def mutation_cb(ind, pm):
         if mut < pm:
             ind['ind'][i] = 1 - ind['ind'][i] # Troca o valor de 0 para 1 e vice-versa.
             print('Mutation in gen', i+1, 'in', ind['tag'], 'with mut=', mut)
+    return ind
+
+def mutation_mochila(ind, pm):
+    """Realiza a mutação em toda a bitstring de um indivíduo, respeitando o fator pm
+    
+    Args:
+        ind: indivíduo a ser mutado
+        pm: probabilidade de mutação
+        
+    Returns:
+        indivíduo mutado"""
+    for i in range(len(ind)):
+        mut = rd.random()
+        if mut < pm:
+            ind[i] = 1 - ind[i] # Troca o valor de 0 para 1 e vice-versa.
+            #print('Mutation in gen', i+1, 'in', ind, 'with mut=', mut)
     return ind
 
 
@@ -461,11 +559,11 @@ def crossover(p1, p2, pc):
         c1[cross_point:] = p2[cross_point:]
         c2[:cross_point] = p2[:cross_point]
         c2[cross_point:] = p1[cross_point:]
-        print('crossover between', p1, 'and', p2, 'done.')
+        #print('crossover between', p1, 'and', p2, 'done.')
     else:
         c1 = p1
         c2 = p2
-        print('Crossover failed.')
+        #print('Crossover failed.')
     return [c1,c2]
 
 
@@ -587,6 +685,21 @@ def roull_sel_max(pop):
             'ind': populacao_selecionada[i]}
     print('sel inds:', populacao_selecionada)
     return pop_dic
+
+def roull_sel_max_mochila(pop, fitness):
+    """Seleciona os individuos de uma população pelo método da roleta para problemas de maximização.
+    
+    Args:
+      pop: lista com todos os individuos da população
+      fitness: lista com os scores dos individuos da população
+
+    Returns:
+      População dos indivíduos selecionados
+    """
+    sel_pop = rd.choices(
+        pop, weights=fitness, k=len(pop)
+    )
+    return sel_pop
 
 
 def tourn_sel_min(pop, real_passw, tamtourn=3):

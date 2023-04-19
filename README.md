@@ -1,8 +1,8 @@
-# Repositório de RNAG - Redes Neurais e Algoritmos Genéticos
-### Pedro Sophia - 220045
-##### *2023*
+# 🧬 Repositório de RNAG - Redes Neurais e Algoritmos Genéticos
+### 👨‍🎓 Pedro Sophia - 220045
+##### 📅 2023
+Este repositório armazena os experimentos feitos por mim (PedroSophiaaa) para a disciplina RNAG, do terceiro semestre.
 
-Este repositório armazena os experimentos feitos por mim (PedroSophiaaa) para a disciplina RNAG, do terceiro semestre.  
-Por agora, os experimentos já feitos estão na pasta *AlgoritmosGeneticos*, a qual possui um README próprio.
+Por agora, os experimentos já feitos estão na pasta AlgoritmosGeneticos, a qual possui um README próprio.
 
-Este repositório está sob constante atualização.
+Este repositório está sob constante atualização. 🔄
