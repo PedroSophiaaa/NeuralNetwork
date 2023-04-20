@@ -41,4 +41,4 @@ Os algoritmos genéticos podem resolver problemas complexos (como problemas **NP
 
 Fique à vontade para explorar e experimentar com os códigos! 💻
 
-Este repositório está sob constante atualização. arrows_counterclockwise
+Este repositório está sob constante atualização. 🔄
