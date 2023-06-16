@@ -40,5 +40,3 @@ Utilizando conceitos da evolução **Darwiniana** e da **genealogia**, como hera
 Os algoritmos genéticos podem resolver problemas complexos (como problemas **NP difíceis**) evitando o uso de estratégias custosas computacionalmente, como busca em grade por produto cartesiano ou outra estratégia de força bruta.
 
 Fique à vontade para explorar e experimentar com os códigos! 💻
-
-Este repositório está sob constante atualização. 🔄
